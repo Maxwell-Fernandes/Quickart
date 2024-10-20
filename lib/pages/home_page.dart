@@ -1,4 +1,3 @@
-// lib/pages/home_page.dart
 import 'package:flutter/material.dart';
 import 'package:quickart_proj/widgets/category_card.dart'; // Import the CategoryCard widget
 import 'package:quickart_proj/widgets/custom_navbar.dart'; // Import your custom navigation bar
@@ -150,9 +149,9 @@ class _HomePageState extends State<HomePage> {
 
   // Dynamically build the home page content with categories from Firestore
   Widget _buildHomePageContent() {
-    return StreamBuilder(
+    return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('category').snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+      builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -174,7 +173,7 @@ class _HomePageState extends State<HomePage> {
 
         // Build the GridView with the fetched categories
         return GridView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 10,
@@ -187,13 +186,15 @@ class _HomePageState extends State<HomePage> {
               title: category.name,
               imagePath: category.imageUrl,
               onTap: () {
+                print(
+                    'Navigating to ProductDetailsPage with categoryId: ${category.id}');
                 // Navigate to ProductDetailsPage on tap
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProductDetailsPage(
-                      title: category.name,
-                      products: [], // Replace with actual products for the category
+                      categoryId: category.id,
+                      categoryName: category.name, // Pass categoryId and name
                     ),
                   ),
                 );

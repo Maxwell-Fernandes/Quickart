@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
-import 'package:quickart_proj/pages/home_page.dart'; // Import the home page
-import 'package:quickart_proj/pages/login_page.dart'; // Import the login page
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:quickart_proj/pages/home_page.dart';
+import 'package:quickart_proj/pages/login_page.dart';
+import 'package:quickart_proj/theme/splash_screen.dart'; // Import the splash screen
+import 'package:quickart_proj/theme/gradient_background.dart'; // Import the GradientBackground widget
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
-  await Firebase.initializeApp(); // Initialize Firebase
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -15,9 +17,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const AuthWrapper(), // Use the AuthWrapper to manage auth state
+      home: SplashScreen(), // Show the SplashScreen as the home widget
     );
   }
 }
@@ -27,19 +29,16 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to auth state changes
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-              child:
-                  CircularProgressIndicator()); // Show loading indicator while checking auth state
+          return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasData) {
-          return const HomePage(); // User is logged in, navigate to HomePage
+          return const HomePage(); // User is logged in
         }
-        return const LoginPage(); // User is not logged in, show LoginPage
+        return const LoginPage(); // User is not logged in
       },
     );
   }
