@@ -1,9 +1,22 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:quickart_proj/home_page.dart';
-import 'package:quickart_proj/registration_page.dart';
+import 'package:quickart_proj/pages/home_page.dart';
+import 'package:quickart_proj/pages/registration_page.dart';
 
-class OtpVerificationPage extends StatelessWidget {
-  const OtpVerificationPage({super.key});
+class OtpVerificationPage extends StatefulWidget {
+  final String verificationid;
+  final String phoneNumber; // Add this line
+  const OtpVerificationPage(
+      {super.key,
+      required this.verificationid,
+      required this.phoneNumber}); // Update constructor
+  @override
+  State<OtpVerificationPage> createState() => _OTPScreenState();
+}
+
+class _OTPScreenState extends State<OtpVerificationPage> {
+  TextEditingController otpcontroller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,18 +48,20 @@ class OtpVerificationPage extends StatelessWidget {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            const Text(
-              'XXXXXXXX33',
-              style: TextStyle(
+            Text(
+              // Use the passed phoneNumber here
+              widget.phoneNumber,
+              style: const TextStyle(
                 color: Color.fromARGB(255, 56, 71, 78),
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: TextField(
-                decoration: InputDecoration(
+                controller: otpcontroller,
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Color.fromARGB(255, 255, 255, 255),
@@ -66,7 +81,7 @@ class OtpVerificationPage extends StatelessWidget {
                   filled: true,
                   fillColor: Color.fromARGB(255, 240, 241, 243),
                 ),
-                keyboardType: TextInputType.numberWithOptions(
+                keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                   signed: false,
                 ),
@@ -113,11 +128,24 @@ class OtpVerificationPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
+                  onPressed: () async {
+                    try {
+                      PhoneAuthCredential credential =
+                          PhoneAuthProvider.credential(
+                              verificationId: widget.verificationid,
+                              smsCode: otpcontroller.text.toString());
+                      FirebaseAuth.instance
+                          .signInWithCredential(credential)
+                          .then((value) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const HomePage()),
+                        );
+                      });
+                    } catch (ex) {
+                      debugPrint(ex.toString());
+                    }
                   },
                   child: const Text(
                     'Next',
