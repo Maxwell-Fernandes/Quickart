@@ -1,9 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:quickart_proj/pages/login_page.dart'; // Adjust the import based on your project structure
+import 'package:quickart_proj/pages/login_page.dart';
+import 'package:quickart_proj/pages/register_screen.dart'; // Adjust the import based on your project structure
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
+
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  String? userId;
+  String name = '';
+  String email = '';
+  String phone = '';
+
+  @override
+  void initState() {
+    super.initState();
+    print("Initializing Profile Page.");
+    _fetchUserDetails();
+  }
+
+  Future<void> _fetchUserDetails() async {
+    try {
+      // Get the current user
+      User? currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser != null) {
+        setState(() {
+          userId = currentUser.uid; // Get the UID
+        });
+
+        print("Fetching user details for UID: $userId");
+
+        // Fetch user details from Firestore
+        DocumentSnapshot snapshot = await FirebaseFirestore.instance
+            .collection('test')
+            .doc(userId)
+            .get();
+
+        if (snapshot.exists) {
+          setState(() {
+            name = snapshot['name'];
+            email = snapshot['email'];
+            phone = snapshot['phone'];
+          });
+        } else {
+          print("User document not found.");
+        }
+      } else {
+        print("No user is currently signed in.");
+      }
+    } catch (e) {
+      print("Error fetching user details: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +66,7 @@ class ProfilePage extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
         title: const Text(
-          'More',
+          'Profile',
           style: TextStyle(
             color: Colors.black,
             fontSize: 24,
@@ -36,20 +90,31 @@ class ProfilePage extends StatelessWidget {
                         'assets/profile_picture.jpg'), // Replace with your image path
                   ),
                   const SizedBox(width: 16),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Jack',
-                        style: TextStyle(
+                        name.isNotEmpty ? name : 'Loading...', // Display name
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        'XXXXXXXXXX',
-                        style: TextStyle(
+                        phone.isNotEmpty
+                            ? phone
+                            : 'Loading...', // Display phone
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      Text(
+                        email.isNotEmpty
+                            ? email
+                            : 'Loading...', // Display email
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
                         ),
@@ -136,7 +201,8 @@ class ProfilePage extends StatelessWidget {
       await FirebaseAuth.instance.signOut(); // Log out from Firebase
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-            builder: (context) => const LoginPage()), // Navigate to Login Page
+            builder: (context) =>
+                const RegisterScreen()), // Navigate to Login Page
         (Route<dynamic> route) => false, // Remove all previous routes
       );
     } catch (e) {

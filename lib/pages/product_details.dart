@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quickart_proj/widgets/custom_button1.dart'; // Import your custom button
 
 class ProductDetailsPage extends StatefulWidget {
   final String categoryId; // Category ID passed from HomePage
@@ -42,9 +43,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('products')
-            .where('category',
-                isEqualTo:
-                    widget.categoryId) // Use the string categoryId directly
+            .where('category', isEqualTo: widget.categoryId)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -148,19 +147,15 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: ElevatedButton(
+                            child: CustomButton(
+                              text: 'Add to Cart',
                               onPressed: () {
                                 // Handle adding to cart with the selected quantity
                                 print(
                                     'Added $productName (Qty: $_quantity) to cart');
                               },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                              ),
-                              child: const Text('Add to Cart'),
+                              color: Colors
+                                  .blue, // Optional: change the color if needed
                             ),
                           ),
                         ],

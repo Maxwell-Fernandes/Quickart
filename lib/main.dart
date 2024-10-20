@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:quickart_proj/pages/register_screen.dart';
+import 'package:quickart_proj/provider/auth_provider.dart'
+    as quickart_auth; // Use alias for AuthProvider
 import 'package:quickart_proj/pages/home_page.dart';
 import 'package:quickart_proj/pages/login_page.dart';
-import 'package:quickart_proj/theme/splash_screen.dart'; // Import the splash screen
-import 'package:quickart_proj/theme/gradient_background.dart'; // Import the GradientBackground widget
+import 'package:quickart_proj/theme/splash_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,9 +20,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SplashScreen(), // Show the SplashScreen as the home widget
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (_) => quickart_auth.AuthProvider()), // Use the alias here
+      ],
+      child: const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: AuthWrapper(),
+        title: "Quickart App",
+      ),
     );
   }
 }
@@ -38,7 +48,7 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.hasData) {
           return const HomePage(); // User is logged in
         }
-        return const LoginPage(); // User is not logged in
+        return const RegisterScreen(); // Show LoginPage if user is not logged in
       },
     );
   }
