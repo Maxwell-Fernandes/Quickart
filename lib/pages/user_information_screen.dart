@@ -1,7 +1,12 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:quickart_proj/models/user_model.dart';
-import 'package:quickart_proj/provider/auth_provider.dart';
+import 'package:quickart_proj/provider/auth_provider.dart'
+    as quickartAuth; // Your custom AuthProvider
 import 'package:quickart_proj/pages/home_page.dart';
 import 'package:quickart_proj/utils/utils.dart';
 import 'package:quickart_proj/widgets/custom_button.dart';
@@ -18,19 +23,117 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final bioController = TextEditingController();
+  late String userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserId(); // Get user ID on initialization
+  }
 
   @override
   void dispose() {
-    super.dispose();
     nameController.dispose();
     emailController.dispose();
     bioController.dispose();
+    super.dispose();
+  }
+
+  void _getUserId() {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      userId = user.uid;
+    }
+  }
+
+// Updated _requestLocationPermission method
+  Future<void> _requestLocationPermission() async {
+    PermissionStatus permissionStatus = await Permission.location.request();
+
+    if (permissionStatus.isGranted) {
+      // Use platform-specific settings
+      LocationSettings locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high, // Equivalent to desiredAccuracy
+        distanceFilter:
+            100, // Minimum distance (in meters) for location updates
+      );
+
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: locationSettings,
+      );
+
+      // Store location in Firestore
+      await FirebaseFirestore.instance.collection('test').doc(userId).set({
+        'location': {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        },
+      }, SetOptions(merge: true));
+
+      // Navigate to HomePage after storing location
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else if (permissionStatus.isDenied) {
+      // Location permission is denied
+      _showPermissionDeniedDialog();
+    } else if (permissionStatus.isPermanentlyDenied) {
+      // Location permission is permanently denied, navigate to app settings
+      _showPermanentlyDeniedDialog();
+    }
+  }
+
+// Add the _showPermanentlyDeniedDialog method
+  void _showPermanentlyDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Location Permission Permanently Denied'),
+          content: const Text(
+              'Please enable location permission in the app settings to proceed.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                openAppSettings(); // Open the app settings
+              },
+              child: const Text('Open Settings'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Location Permission Denied'),
+          content: const Text(
+              'Location permission is required to proceed. Please enable it in settings.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final isLoading =
-        Provider.of<AuthProvider>(context, listen: true).isLoading;
+        Provider.of<quickartAuth.AuthProvider>(context, listen: true).isLoading;
     return Scaffold(
       body: SafeArea(
         child: isLoading
@@ -45,7 +148,6 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
                 child: Center(
                   child: Column(
                     children: [
-                      // Removed image selection
                       const CircleAvatar(
                         backgroundColor: Color.fromARGB(255, 5, 188, 47),
                         radius: 50,
@@ -62,7 +164,6 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
                         margin: const EdgeInsets.only(top: 20),
                         child: Column(
                           children: [
-                            // Name field
                             textField(
                               hintText: "John Smith",
                               icon: Icons.account_circle,
@@ -70,7 +171,6 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
                               maxLines: 1,
                               controller: nameController,
                             ),
-                            // Email field
                             textField(
                               hintText: "abc@example.com",
                               icon: Icons.email,
@@ -78,7 +178,6 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
                               maxLines: 1,
                               controller: emailController,
                             ),
-                            // Bio field
                             textField(
                               hintText: "Enter your bio here...",
                               icon: Icons.edit,
@@ -155,17 +254,15 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
     );
   }
 
-  // Store user data to database
   void storeData() async {
-    final ap = Provider.of<AuthProvider>(context, listen: false);
+    final ap = Provider.of<quickartAuth.AuthProvider>(context, listen: false);
     UserModel userModel = UserModel(
       name: nameController.text.trim(),
       email: emailController.text.trim(),
       bio: bioController.text.trim(),
-      // / Set to empty since we're not using an image
       createdAt: "",
       phoneNumber: "",
-      uid: "",
+      uid: userId,
     );
 
     ap.saveUserDataToFirebase(
@@ -174,13 +271,7 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
       onSuccess: () {
         ap.saveUserDataToSP().then(
               (value) => ap.setSignIn().then(
-                    (value) => Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const HomePage(),
-                      ),
-                      (route) => false,
-                    ),
+                    (value) => _requestLocationPermission(),
                   ),
             );
       },

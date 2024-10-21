@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quickart_proj/theme/color_theme.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -12,8 +13,7 @@ class CustomButton extends StatelessWidget {
       onPressed: onPressed,
       style: ButtonStyle(
         foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
-        backgroundColor:
-            WidgetStateProperty.all<Color>(Color.fromARGB(255, 5, 188, 47)),
+        backgroundColor: WidgetStateProperty.all<Color>(AppTheme.primaryColor),
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25.0),

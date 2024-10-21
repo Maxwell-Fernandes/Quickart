@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quickart_proj/provider/auth_provider.dart';
 import 'package:quickart_proj/pages/home_page.dart';
 import 'package:quickart_proj/pages/user_information_screen.dart';
+import 'package:quickart_proj/theme/color_theme.dart';
 import 'package:quickart_proj/utils/utils.dart';
 import 'package:quickart_proj/widgets/custom_button.dart';
 import 'package:pinput/pinput.dart';
@@ -44,12 +45,12 @@ class _OtpScreenState extends State<OtpScreen> {
                         ),
                       ),
                       Container(
-                        width: 200,
-                        height: 200,
+                        width: 300,
+                        height: 300,
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.purple.shade50,
+                          color: AppTheme.backgroundColor,
                         ),
                         child: Image.asset(
                           "images/login_page.png",

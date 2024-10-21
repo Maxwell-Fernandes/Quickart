@@ -1,6 +1,7 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:quickart_proj/provider/auth_provider.dart';
+import 'package:quickart_proj/theme/color_theme.dart';
 import 'package:quickart_proj/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 
@@ -47,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   padding: const EdgeInsets.all(14.0),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color.fromARGB(255, 63, 237, 159),
+                    color: AppTheme.backgroundColor,
                   ),
                   child: Image.asset(
                     "images/login_page.png",
@@ -73,7 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
-                  cursorColor: Color.fromARGB(255, 5, 188, 47),
+                  cursorColor: AppTheme.primaryColor,
                   controller: phoneController,
                   style: const TextStyle(
                     fontSize: 18,
@@ -131,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             margin: const EdgeInsets.all(10.0),
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.green,
+                              color: AppTheme.primaryColor,
                             ),
                             child: const Icon(
                               Icons.done,

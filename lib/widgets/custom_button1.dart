@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quickart_proj/theme/color_theme.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -12,8 +13,8 @@ class CustomButton extends StatelessWidget {
     Key? key,
     required this.text,
     required this.onPressed,
-    this.color = Colors.blue,
-    this.textColor = Colors.white,
+    this.color = AppTheme.primaryColor,
+    this.textColor = AppTheme.primaryColor,
     this.elevation = 2.0,
     this.borderRadius = 8.0,
   }) : super(key: key);

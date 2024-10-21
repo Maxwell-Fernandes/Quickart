@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quickart_proj/widgets/custom_button1.dart'; // Import your custom button
 
 class ProductDetailsPage extends StatefulWidget {
@@ -16,46 +17,49 @@ class ProductDetailsPage extends StatefulWidget {
   _ProductDetailsPageState createState() => _ProductDetailsPageState();
 }
 
-class _ProductDetailsPageState extends State<ProductDetailsPage>
-    with SingleTickerProviderStateMixin {
-  int _quantity = 1; // Default quantity
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _ProductDetailsPageState extends State<ProductDetailsPage> {
+  Future<void> _addToCart(String productId, double price, int quantity) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // Handle user not logged in
+      print('User is not logged in');
+      return;
+    }
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _animation = Tween<double>(begin: 1.0, end: 1.1).animate(_controller);
-  }
+    final userId = user.uid;
 
-  void _incrementQuantity() {
-    _controller.forward().then((_) {
-      setState(() {
-        _quantity++;
+    // Check if cart document already exists
+    final cartDocRef =
+        FirebaseFirestore.instance.collection('carts').doc(userId);
+    final cartSnapshot = await cartDocRef.get();
+
+    // Prepare the new item
+    final newItem = {
+      'product_id': productId,
+      'price': price,
+      'quantity': quantity,
+    };
+
+    if (cartSnapshot.exists) {
+      // If the document exists, update the items array
+      await cartDocRef.update({
+        'items': FieldValue.arrayUnion([newItem]),
+        'updatedAt': FieldValue.serverTimestamp(), // Update the timestamp
+        'total_amount':
+            FieldValue.increment(price * quantity), // Update the total amount
       });
-      _controller.reverse();
-    });
-  }
-
-  void _decrementQuantity() {
-    if (_quantity > 1) {
-      _controller.forward().then((_) {
-        setState(() {
-          _quantity--;
-        });
-        _controller.reverse();
+    } else {
+      // If the document does not exist, create a new one
+      await cartDocRef.set({
+        'user_id': userId,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'items': [newItem],
+        'total_amount': price * quantity, // Set the initial total amount
       });
     }
-  }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+    print('Added item to cart: $newItem');
   }
 
   @override
@@ -63,7 +67,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.categoryName),
-        backgroundColor: Colors.blueAccent, // Modern color for the app bar
+        backgroundColor: Colors.blueAccent,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -95,112 +99,125 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                     final product = products[index];
                     final imageUrl = product['image_url'] ?? '';
                     final productName = product['product_name'] ?? 'Unknown';
-                    final price = product['price'] ?? 0;
+                    final price = (product['price'] ?? 0).toDouble();
 
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      elevation: 8,
-                      shadowColor: Colors.black26,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(15.0)),
-                              child: imageUrl.isNotEmpty
-                                  ? FadeInImage(
-                                      placeholder: AssetImage(
-                                          'images/loading.gif'), // Loading placeholder
-                                      image: NetworkImage(imageUrl),
-                                      fit: BoxFit.cover,
-                                      fadeInDuration:
-                                          const Duration(milliseconds: 300),
-                                    )
-                                  : const Icon(Icons.image_not_supported),
-                            ),
+                    // Local quantity state for each product
+                    int _quantity = 1;
+
+                    return StatefulBuilder(
+                      builder: (context, setState) {
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              productName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.black,
+                          elevation: 8,
+                          shadowColor: Colors.black26,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(15.0)),
+                                  child: imageUrl.isNotEmpty
+                                      ? FadeInImage(
+                                          placeholder: const AssetImage(
+                                              'images/loading.gif'), // Loading placeholder
+                                          image: NetworkImage(imageUrl),
+                                          fit: BoxFit.cover,
+                                          fadeInDuration:
+                                              const Duration(milliseconds: 300),
+                                        )
+                                      : const Icon(Icons.image_not_supported),
+                                ),
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text(
-                              '₹$price',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                GestureDetector(
-                                  onTap: _decrementQuantity,
-                                  child: ScaleTransition(
-                                    scale: _controller,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8.0),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.red[100],
-                                      ),
-                                      child: const Icon(Icons.remove,
-                                          color: Colors.red),
-                                    ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  productName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.black,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                Text(
-                                  '$_quantity',
-                                  style: const TextStyle(fontSize: 18),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text(
+                                  '₹$price',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(color: Colors.grey),
                                 ),
-                                GestureDetector(
-                                  onTap: _incrementQuantity,
-                                  child: ScaleTransition(
-                                    scale: _controller,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8.0),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.green[100],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          if (_quantity > 1) {
+                                            _quantity--;
+                                          }
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8.0),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.red[100],
+                                        ),
+                                        child: const Icon(Icons.remove,
+                                            color: Colors.red),
                                       ),
-                                      child: const Icon(Icons.add,
-                                          color: Colors.green),
                                     ),
-                                  ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12.0),
+                                      child: Text(
+                                        '$_quantity',
+                                        style: const TextStyle(fontSize: 18),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _quantity++;
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8.0),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.green[100],
+                                        ),
+                                        child: const Icon(Icons.add,
+                                            color: Colors.green),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CustomButton(
+                                  text: 'Add to Cart',
+                                  onPressed: () {
+                                    _addToCart(product['product_id'], price,
+                                        _quantity);
+                                  },
+                                  color: Colors.blue,
+                                  elevation: 4,
+                                ),
+                              ),
+                            ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CustomButton(
-                              text: 'Add to Cart',
-                              onPressed: () {
-                                // Handle adding to cart with the selected quantity
-                                print(
-                                    'Added $productName (Qty: $_quantity) to cart');
-                              },
-                              color: Colors
-                                  .blue, // Optional: change the color if needed
-                              elevation: 4,
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     );
                   },
                 );
