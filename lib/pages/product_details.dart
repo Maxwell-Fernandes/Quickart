@@ -16,29 +16,54 @@ class ProductDetailsPage extends StatefulWidget {
   _ProductDetailsPageState createState() => _ProductDetailsPageState();
 }
 
-class _ProductDetailsPageState extends State<ProductDetailsPage> {
+class _ProductDetailsPageState extends State<ProductDetailsPage>
+    with SingleTickerProviderStateMixin {
   int _quantity = 1; // Default quantity
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 1.0, end: 1.1).animate(_controller);
+  }
 
   void _incrementQuantity() {
-    setState(() {
-      _quantity++;
+    _controller.forward().then((_) {
+      setState(() {
+        _quantity++;
+      });
+      _controller.reverse();
     });
   }
 
   void _decrementQuantity() {
     if (_quantity > 1) {
-      setState(() {
-        _quantity--;
+      _controller.forward().then((_) {
+        setState(() {
+          _quantity--;
+        });
+        _controller.reverse();
       });
     }
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    print('Received categoryId in ProductDetailsPage: ${widget.categoryId}');
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.categoryName), // Display category name
+        title: Text(widget.categoryName),
+        backgroundColor: Colors.blueAccent, // Modern color for the app bar
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -76,7 +101,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15.0),
                       ),
-                      elevation: 4,
+                      elevation: 8,
+                      shadowColor: Colors.black26,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -85,7 +111,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               borderRadius: BorderRadius.vertical(
                                   top: Radius.circular(15.0)),
                               child: imageUrl.isNotEmpty
-                                  ? Image.network(imageUrl, fit: BoxFit.cover)
+                                  ? FadeInImage(
+                                      placeholder: AssetImage(
+                                          'images/loading.gif'), // Loading placeholder
+                                      image: NetworkImage(imageUrl),
+                                      fit: BoxFit.cover,
+                                      fadeInDuration:
+                                          const Duration(milliseconds: 300),
+                                    )
                                   : const Icon(Icons.image_not_supported),
                             ),
                           ),
@@ -94,9 +127,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             child: Text(
                               productName,
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Colors.black),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -116,14 +150,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               children: [
                                 GestureDetector(
                                   onTap: _decrementQuantity,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.red[100],
+                                  child: ScaleTransition(
+                                    scale: _controller,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.red[100],
+                                      ),
+                                      child: const Icon(Icons.remove,
+                                          color: Colors.red),
                                     ),
-                                    child: const Icon(Icons.remove,
-                                        color: Colors.red),
                                   ),
                                 ),
                                 Text(
@@ -132,14 +169,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                 ),
                                 GestureDetector(
                                   onTap: _incrementQuantity,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.green[100],
+                                  child: ScaleTransition(
+                                    scale: _controller,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.green[100],
+                                      ),
+                                      child: const Icon(Icons.add,
+                                          color: Colors.green),
                                     ),
-                                    child: const Icon(Icons.add,
-                                        color: Colors.green),
                                   ),
                                 ),
                               ],
@@ -156,6 +196,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               },
                               color: Colors
                                   .blue, // Optional: change the color if needed
+                              elevation: 4,
                             ),
                           ),
                         ],

@@ -6,6 +6,7 @@ import 'package:quickart_proj/provider/auth_provider.dart'
     as quickart_auth; // Use alias for AuthProvider
 import 'package:quickart_proj/pages/home_page.dart';
 import 'package:quickart_proj/pages/login_page.dart';
+import 'package:quickart_proj/theme/color_theme.dart';
 import 'package:quickart_proj/theme/splash_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

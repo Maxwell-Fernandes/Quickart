@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:quickart_proj/pages/login_page.dart';
 import 'package:quickart_proj/pages/register_screen.dart'; // Adjust the import based on your project structure
+import 'package:quickart_proj/models/user_model.dart'; // Make sure to adjust this import path
+import 'package:quickart_proj/pages/edit_profile.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -13,9 +14,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   String? userId;
-  String name = '';
-  String email = '';
-  String phone = '';
+  UserModel? userModel;
 
   @override
   void initState() {
@@ -43,11 +42,11 @@ class _ProfilePageState extends State<ProfilePage> {
             .get();
 
         if (snapshot.exists) {
-          setState(() {
-            name = snapshot['name'];
-            email = snapshot['email'];
-            phone = snapshot['phone'];
-          });
+          // Map the Firestore document to UserModel
+          userModel =
+              UserModel.fromMap(snapshot.data() as Map<String, dynamic>);
+
+          setState(() {}); // Update the UI with the fetched data
         } else {
           print("User document not found.");
         }
@@ -75,124 +74,137 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            // User Profile Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
+      body: userModel == null
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
                 children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundImage: AssetImage(
-                        'assets/profile_picture.jpg'), // Replace with your image path
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name.isNotEmpty ? name : 'Loading...', // Display name
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                  const SizedBox(height: 20),
+                  // User Profile Section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      children: [
+                        const CircleAvatar(
+                          radius: 40,
+                          backgroundImage: AssetImage(
+                              'images/profile_picture.png'), // Replace with your image path
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        phone.isNotEmpty
-                            ? phone
-                            : 'Loading...', // Display phone
-                        style: const TextStyle(
-                          fontSize: 16,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                userModel!.name.isNotEmpty
+                                    ? userModel!.name
+                                    : 'No Name Available',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                userModel!.phoneNumber.isNotEmpty
+                                    ? userModel!.phoneNumber
+                                    : 'No Phone Number Available',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                userModel!.email.isNotEmpty
+                                    ? userModel!.email
+                                    : 'No Email Available',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const EditProfilePage()), // Replace EditProfilePage() with your desired page
+                            );
+                          },
+                          icon: const Icon(Icons.edit),
                           color: Colors.grey,
                         ),
-                      ),
-                      Text(
-                        email.isNotEmpty
-                            ? email
-                            : 'Loading...', // Display email
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      // Navigate to edit profile page
+                  const SizedBox(height: 20),
+                  // Options List
+                  _buildProfileOption(
+                    icon: Icons.location_on,
+                    title: 'My Address',
+                    onTap: () {
+                      // Navigate to My Address page
                     },
-                    icon: const Icon(Icons.edit),
-                    color: Colors.grey,
+                  ),
+                  _buildProfileOption(
+                    icon: Icons.shopping_bag,
+                    title: 'My Orders',
+                    onTap: () {
+                      // Navigate to My Orders page
+                    },
+                  ),
+                  _buildProfileOption(
+                    icon: Icons.favorite,
+                    title: 'My Wishlist',
+                    onTap: () {
+                      // Navigate to My Wishlist page
+                    },
+                  ),
+                  _buildProfileOption(
+                    icon: Icons.chat,
+                    title: 'Chat with us',
+                    onTap: () {
+                      // Navigate to chat page
+                    },
+                  ),
+                  _buildProfileOption(
+                    icon: Icons.phone,
+                    title: 'Talk to our Support',
+                    onTap: () {
+                      // Handle calling support
+                    },
+                  ),
+                  _buildProfileOption(
+                    icon: Icons.mail,
+                    title: 'Mail to us',
+                    onTap: () {
+                      // Handle sending mail
+                    },
+                  ),
+                  _buildProfileOption(
+                    icon: Icons.facebook,
+                    title: 'Message to Facebook page',
+                    onTap: () {
+                      // Handle Facebook messaging
+                    },
+                  ),
+                  _buildProfileOption(
+                    icon: Icons.logout,
+                    title: 'Log out',
+                    onTap: () async {
+                      await _logout(context);
+                    },
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            // Options List
-            _buildProfileOption(
-              icon: Icons.location_on,
-              title: 'My Address',
-              onTap: () {
-                // Navigate to My Address page
-              },
-            ),
-            _buildProfileOption(
-              icon: Icons.shopping_bag,
-              title: 'My Orders',
-              onTap: () {
-                // Navigate to My Orders page
-              },
-            ),
-            _buildProfileOption(
-              icon: Icons.favorite,
-              title: 'My Wishlist',
-              onTap: () {
-                // Navigate to My Wishlist page
-              },
-            ),
-            _buildProfileOption(
-              icon: Icons.chat,
-              title: 'Chat with us',
-              onTap: () {
-                // Navigate to chat page
-              },
-            ),
-            _buildProfileOption(
-              icon: Icons.phone,
-              title: 'Talk to our Support',
-              onTap: () {
-                // Handle calling support
-              },
-            ),
-            _buildProfileOption(
-              icon: Icons.mail,
-              title: 'Mail to us',
-              onTap: () {
-                // Handle sending mail
-              },
-            ),
-            _buildProfileOption(
-              icon: Icons.facebook,
-              title: 'Message to Facebook page',
-              onTap: () {
-                // Handle Facebook messaging
-              },
-            ),
-            _buildProfileOption(
-              icon: Icons.logout,
-              title: 'Log out',
-              onTap: () async {
-                await _logout(context);
-              },
-            ),
-          ],
-        ),
-      ),
     );
   }
 

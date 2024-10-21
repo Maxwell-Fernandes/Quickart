@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quickart_proj/theme/color_theme.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -33,7 +34,7 @@ class CustomBottomNavBar extends StatelessWidget {
       ],
       currentIndex: selectedIndex,
       onTap: onItemTapped,
-      selectedItemColor: const Color.fromARGB(255, 56, 71, 78),
+      selectedItemColor: AppTheme.primaryColor,
       unselectedItemColor: Colors.grey,
     );
   }
