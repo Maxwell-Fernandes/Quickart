@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:quickart_proj/theme/color_theme.dart';
 import 'package:quickart_proj/widgets/custom_button1.dart'; // Import your custom button
 
 class ProductDetailsPage extends StatefulWidget {
@@ -67,7 +68,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.categoryName),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: AppTheme.primaryColor,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -93,7 +94,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 0.65, // Adjusted to give more height
                   ),
                   itemBuilder: (BuildContext context, int index) {
                     final product = products[index];
@@ -117,18 +118,22 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             children: [
                               Expanded(
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(15.0)),
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(15.0),
+                                  ),
                                   child: imageUrl.isNotEmpty
                                       ? FadeInImage(
                                           placeholder: const AssetImage(
-                                              'images/loading.gif'), // Loading placeholder
+                                              'images/loading.gif'),
                                           image: NetworkImage(imageUrl),
-                                          fit: BoxFit.cover,
+                                          fit: BoxFit.contain, // Improved fit
                                           fadeInDuration:
                                               const Duration(milliseconds: 300),
                                         )
-                                      : const Icon(Icons.image_not_supported),
+                                      : const Icon(
+                                          Icons.image_not_supported,
+                                          size: 50,
+                                        ),
                                 ),
                               ),
                               Padding(
@@ -149,7 +154,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                 child: Text(
                                   '₹$price',
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(color: Colors.grey),
+                                  style: const TextStyle(
+                                      color: AppTheme.primaryTextColor),
                                 ),
                               ),
                               Padding(
@@ -196,7 +202,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                           color: Colors.green[100],
                                         ),
                                         child: const Icon(Icons.add,
-                                            color: Colors.green),
+                                            color: AppTheme.primaryColor),
                                       ),
                                     ),
                                   ],
@@ -210,7 +216,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                     _addToCart(product['product_id'], price,
                                         _quantity);
                                   },
-                                  color: Colors.blue,
+                                  color: AppTheme.primaryColor,
                                   elevation: 4,
                                 ),
                               ),

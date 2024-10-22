@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:quickart_proj/pages/orders_page.dart';
 import 'package:quickart_proj/pages/register_screen.dart'; // Adjust the import based on your project structure
 import 'package:quickart_proj/models/user_model.dart'; // Make sure to adjust this import path
 import 'package:quickart_proj/pages/edit_profile.dart';
@@ -157,6 +158,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.shopping_bag,
                     title: 'My Orders',
                     onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const OrdersPage()),
+                      );
+
                       // Navigate to My Orders page
                     },
                   ),

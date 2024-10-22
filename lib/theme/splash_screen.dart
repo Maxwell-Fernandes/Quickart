@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quickart_proj/pages/home_page.dart';
 import 'package:quickart_proj/pages/login_page.dart';
 import 'package:quickart_proj/main.dart';
+import 'package:quickart_proj/pages/register_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);

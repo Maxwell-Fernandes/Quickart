@@ -8,6 +8,7 @@ import 'package:quickart_proj/models/user_model.dart';
 import 'package:quickart_proj/provider/auth_provider.dart'
     as quickartAuth; // Your custom AuthProvider
 import 'package:quickart_proj/pages/home_page.dart';
+import 'package:quickart_proj/theme/color_theme.dart';
 import 'package:quickart_proj/utils/utils.dart';
 import 'package:quickart_proj/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
@@ -139,7 +140,7 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
         child: isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: Color.fromARGB(255, 5, 188, 47),
+                  color: AppTheme.primaryColor,
                 ),
               )
             : SingleChildScrollView(
@@ -149,7 +150,7 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
                   child: Column(
                     children: [
                       const CircleAvatar(
-                        backgroundColor: Color.fromARGB(255, 5, 188, 47),
+                        backgroundColor: AppTheme.backgroundColor,
                         radius: 50,
                         child: Icon(
                           Icons.account_circle,
@@ -165,7 +166,7 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
                         child: Column(
                           children: [
                             textField(
-                              hintText: "John Smith",
+                              hintText: "Dattaraj Pagi",
                               icon: Icons.account_circle,
                               inputType: TextInputType.name,
                               maxLines: 1,
@@ -215,7 +216,7 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: TextFormField(
-        cursorColor: Colors.purple,
+        cursorColor: AppTheme.primaryTextColor,
         controller: controller,
         keyboardType: inputType,
         maxLines: maxLines,
@@ -224,7 +225,7 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
             margin: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: Colors.purple,
+              color: AppTheme.secondaryColor,
             ),
             child: Icon(
               icon,
@@ -247,7 +248,7 @@ class _UserInformationScreenState extends State<UserInformationScreen> {
           hintText: hintText,
           alignLabelWithHint: true,
           border: InputBorder.none,
-          fillColor: Colors.purple.shade50,
+          fillColor: AppTheme.secondaryColor,
           filled: true,
         ),
       ),

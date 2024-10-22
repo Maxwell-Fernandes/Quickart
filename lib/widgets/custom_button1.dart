@@ -14,7 +14,7 @@ class CustomButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.color = AppTheme.primaryColor,
-    this.textColor = AppTheme.primaryColor,
+    this.textColor = AppTheme.primaryTextColor,
     this.elevation = 2.0,
     this.borderRadius = 8.0,
   }) : super(key: key);
@@ -25,7 +25,7 @@ class CustomButton extends StatelessWidget {
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        foregroundColor: textColor,
+        // foregroundColor: textColor,
         elevation: elevation,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
@@ -33,7 +33,7 @@ class CustomButton extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 16),
+        style: TextStyle(fontSize: 16, color: textColor),
       ),
     );
   }

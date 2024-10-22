@@ -49,7 +49,7 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.hasData) {
           return const HomePage(); // User is logged in
         }
-        return const SplashScreen(); // Show LoginPage if user is not logged in
+        return const RegisterScreen(); // Show LoginPage if user is not logged in
       },
     );
   }
