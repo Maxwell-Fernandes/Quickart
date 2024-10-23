@@ -127,20 +127,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           backgroundImage:
                               AssetImage('images/profile_picture.png'),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.orange,
-                            child: IconButton(
-                              icon: const Icon(Icons.camera_alt,
-                                  color: Colors.white),
-                              onPressed: () {
-                                // Implement change profile picture functionality
-                              },
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
